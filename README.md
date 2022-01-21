@@ -34,7 +34,7 @@ struct NomNomPhotosApp: App {
 
 ## How to run
 1. Install [tuist](https://tuist.io). `curl -Ls https://install.tuist.io | bash`
-2. Generate xcodeproj and open `tuist generate --open`.
+2. Generate xcodeproj and open `tuist generate --open`
 
 ## Dependencies
 * [The Composable Arcitecture](https://github.com/pointfreeco/swift-composable-architecture)
