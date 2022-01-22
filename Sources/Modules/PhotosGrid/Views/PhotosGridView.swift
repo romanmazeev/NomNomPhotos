@@ -14,31 +14,40 @@ struct PhotosGridView: View {
     
     var body: some View {
         WithViewStore(store) { viewStore in
-            ScrollView {
-                LazyVGrid(columns: [GridItem()]) {
-                    ForEachStore(
-                        self.store.scope(state: \.filteredPhotos, action: PhotosGridAction.photoDetailsCell(id:action:))
-                    ) { cellStore in
-                        WithViewStore(cellStore) { cellViewStore in
-                            PhotosGridCell(state: cellViewStore.state, animation: animation)
-                                .onTapGesture {
-                                    viewStore.send(
-                                        .onPhotoTap(id: cellViewStore.id),
-                                        animation: .spring(response: 0.5, dampingFraction: 0.6)
-                                    )
-                                }
+            switch viewStore.loadingState {
+            case .loading:
+                ProgressView("Loading...")
+            case .failed:
+                Text("Error occured")
+            case .loaded:
+                ScrollView {
+                    LazyVGrid(columns: [GridItem()]) {
+                        ForEachStore(
+                            self.store.scope(state: \.filteredPhotos, action: PhotosGridAction.photoDetailsCell(id:action:))
+                        ) { cellStore in
+                            WithViewStore(cellStore) { cellViewStore in
+                                PhotosGridCell(state: cellViewStore.state, animation: animation)
+                                    .onTapGesture {
+                                        viewStore.send(
+                                            .onPhotoTap(id: cellViewStore.id),
+                                            animation: .spring(response: 0.5, dampingFraction: 0.6)
+                                        )
+                                    }
+                            }
                         }
                     }
-                }
-                .searchable(
-                    text: viewStore.binding(
-                        get: \.searchText,
-                        send: PhotosGridAction.onSeachTextChange
+                    .searchable(
+                        text: viewStore.binding(
+                            get: \.searchText,
+                            send: PhotosGridAction.onSeachTextChange
+                        )
                     )
-                )
-                .onAppear {
-                    viewStore.send(.onAppear, animation: .default)
                 }
+            case .notStarted:
+                Color.background
+                    .onAppear {
+                        viewStore.send(.onAppear, animation: .default)
+                    }
             }
         }
     }

@@ -16,7 +16,6 @@ struct PhotosGridState: Equatable {
         case failed
     }
     
-    var isLoading: Bool { loadingState == .loading }
     var loadingState: LoadingState = .notStarted
     var photos: IdentifiedArrayOf<PhotoDetailsState> = []
     
