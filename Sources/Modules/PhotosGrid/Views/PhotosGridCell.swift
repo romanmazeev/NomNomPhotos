@@ -26,10 +26,10 @@ struct PhotosGridCell: View {
                     image
                         .resizable()
                         .aspectRatio(contentMode: .fit)
-                case .failure(let error):
+                case .failure:
                     VStack {
                         Image(systemName: "photo")
-                        Text(error.localizedDescription)
+                        Text("Error occured")
                     }
                 @unknown default:
                     Image(systemName: "photo")
