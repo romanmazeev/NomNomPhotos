@@ -25,6 +25,7 @@ struct AppView: View {
                     )
                     .navigationTitle("Photos")
                 }
+                .onAppear { viewStore.send(.onAppear) }
                 .navigationViewStyle(.stack)
                 .zIndex(1)
             }

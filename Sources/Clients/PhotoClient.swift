@@ -8,11 +8,11 @@
 import ComposableArchitecture
 
 // MARK: - API models
-protocol Photo {
-    var idString: String { get }
-    var title: String { get }
-    var fullSizeUrl: URL { get }
-    var thumbnailURL: URL { get }
+struct Photo: Equatable {
+    let id: String
+    let title: String
+    let url: URL
+    let thumbnailURL: URL
 }
 
 struct PhotoWithThumbnail: Equatable, Codable {
@@ -21,13 +21,6 @@ struct PhotoWithThumbnail: Equatable, Codable {
     let title: String
     let url: URL
     let thumbnailUrl: URL
-}
-
-extension PhotoWithThumbnail: Photo {
-    var idString: String { String(id) }
-    
-    var fullSizeUrl: URL { url }
-    var thumbnailURL: URL { thumbnailUrl }
 }
 
 struct PhotoWithoutThumbnail: Equatable, Decodable {
@@ -39,14 +32,6 @@ struct PhotoWithoutThumbnail: Equatable, Decodable {
     let url: URL
     /// Huge image
     let downloadURL: URL
-    
-}
-
-extension PhotoWithoutThumbnail: Photo {
-    var idString: String { id }
-    var title: String { author }
-    var fullSizeUrl: URL { downloadURL }
-    var thumbnailURL: URL { downloadURL }
 }
 
 extension PhotoWithoutThumbnail {
@@ -73,7 +58,9 @@ extension PhotosClient {
                     guard let url = URL(string: "https://jsonplaceholder.typicode.com/photos") else { return [] }
 
                     let (data, _) = try await URLSession.shared.data(from: url)
-                    return try Array(JSONDecoder().decode([PhotoWithThumbnail].self, from: data).prefix(15))
+                    return try JSONDecoder().decode([PhotoWithThumbnail].self, from: data)
+                        .prefix(15)
+                        .map { .init(id: String($0.id), title: $0.title, url: $0.url, thumbnailURL: $0.thumbnailUrl) }
                 } catch {
                     // TODO: Return error
                     print(error.localizedDescription)
@@ -95,7 +82,8 @@ extension PhotosClient {
                     guard let url = URL(string: "https://picsum.photos/v2/list") else { return [] }
 
                     let (data, _) = try await URLSession.shared.data(from: url)
-                    return try Array(JSONDecoder().decode([PhotoWithoutThumbnail].self, from: data))
+                    return try JSONDecoder().decode([PhotoWithoutThumbnail].self, from: data)
+                        .map { .init(id: $0.id, title: $0.author, url: $0.downloadURL, thumbnailURL: $0.downloadURL) }
                 } catch {
                     // TODO: Return error
                     print(error.localizedDescription)

@@ -83,8 +83,7 @@ struct PhotoDetailsView_Previews: PreviewProvider {
                     initialState: .init(
                         id: "1",
                         title: "Test",
-                        url: URL(string: "https://unsplash.com/photos/yC-Yzbqy7PY")!,
-                        thumbnailURL: URL(string: "https://unsplash.com/photos/yC-Yzbqy7PY")!
+                        url: URL(string: "https://unsplash.com/photos/yC-Yzbqy7PY")!
                     ),
                     reducer: photoDetailsReducer,
                     environment: .init()

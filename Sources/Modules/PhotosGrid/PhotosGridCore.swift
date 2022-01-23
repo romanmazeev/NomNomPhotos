@@ -17,66 +17,42 @@ struct PhotosGridState: Equatable {
     }
     
     var loadingState: LoadingState = .notStarted
-    var photos: IdentifiedArrayOf<PhotoDetailsState> = []
+    var photos: IdentifiedArrayOf<PhotosGridCellState> = []
     
     // MARK: Search
     var searchText: String = ""
-    var filteredPhotos: IdentifiedArrayOf<PhotoDetailsState> {
+    var filteredPhotos: IdentifiedArrayOf<PhotosGridCellState> {
         searchText.isEmpty ? photos : photos.filter { $0.title.localizedCaseInsensitiveContains(searchText) }
     }
 }
 
 enum PhotosGridAction {
     case onAppear
-    case refresh
-    case photosResponse(Result<[Photo], PhotosClient.Error>)
     case onSeachTextChange(String)
     
-    case photoDetailsCell(id: String, action: PhotoDetailsAction)
-    case onPhotoTap(id: String)
+    case photosGridCell(id: String, action: PhotosGridCellAction)
 }
 
-struct PhotosGridEnvironment {
-    let mainQueue: AnySchedulerOf<DispatchQueue>
-    let photosClient: PhotosClient
-    let logger: Logger
-}
+struct PhotosGridEnvironment {}
 
 // MARK: - Reducer
 
-let photosGridReducer = Reducer<PhotosGridState, PhotosGridAction, PhotosGridEnvironment>.combine(    
-        .init { state, action, environment in
-            var refreshEffect: Effect<PhotosGridAction, Never> {
-                state.loadingState = .loading
-                return environment.photosClient.fetch()
-                    .receive(on: environment.mainQueue)
-                    .catchToEffect(PhotosGridAction.photosResponse)
-            }
-            
-            switch action {
-            case .onAppear:
-                guard state.loadingState == .notStarted else { return .none }
-                return refreshEffect
-            case .photosResponse(.success(let photos)):
-                state.photos = IdentifiedArrayOf(uniqueElements: photos.map {
-                    .init(id: $0.idString, title: $0.title, url: $0.fullSizeUrl, thumbnailURL: $0.thumbnailURL)
-                })
-                state.loadingState = .loaded
-                return .none
-            case .photosResponse(.failure(let error)):
-                environment.logger.error("\(error.localizedDescription)")
-                state.photos = []
-                state.loadingState = .failed
-                return .none
-            case .onSeachTextChange(let searchText):
-                state.searchText = searchText
-                return .none
-            case .refresh:
-                return refreshEffect
-            case .photoDetailsCell(let id, let action):
-                return .none
-            case .onPhotoTap(let id):
-                return .none
-            }
+let photosGridReducer = Reducer<PhotosGridState, PhotosGridAction, PhotosGridEnvironment>.combine(
+    photosGridCellReducer
+        .forEach(
+            state: \.photos,
+            action: /PhotosGridAction.photosGridCell(id:action:),
+            environment: { _ in .init() }
+        ),
+    .init { state, action, environment in
+        switch action {
+        case .onSeachTextChange(let searchText):
+            state.searchText = searchText
+            return .none
+        case .photosGridCell(let id, let action):
+            return .none
+        case .onAppear:
+            return .none
         }
+    }
 )

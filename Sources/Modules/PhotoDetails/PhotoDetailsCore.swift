@@ -11,7 +11,6 @@ struct PhotoDetailsState: Identifiable, Equatable {
     let id: String
     let title: String
     let url: URL
-    let thumbnailURL: URL
 }
 
 enum PhotoDetailsAction {

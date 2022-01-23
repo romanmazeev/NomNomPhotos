@@ -23,17 +23,9 @@ struct PhotosGridView: View {
                 ScrollView {
                     LazyVGrid(columns: [GridItem()]) {
                         ForEachStore(
-                            self.store.scope(state: \.filteredPhotos, action: PhotosGridAction.photoDetailsCell(id:action:))
+                            store.scope(state: \.filteredPhotos, action: PhotosGridAction.photosGridCell(id:action:))
                         ) { cellStore in
-                            WithViewStore(cellStore) { cellViewStore in
-                                PhotosGridCell(state: cellViewStore.state, animation: animation)
-                                    .onTapGesture {
-                                        viewStore.send(
-                                            .onPhotoTap(id: cellViewStore.id),
-                                            animation: .spring(response: 0.5, dampingFraction: 0.6)
-                                        )
-                                    }
-                            }
+                            PhotosGridCellView(store: cellStore, animation: animation)
                         }
                     }
                     .searchable(
@@ -61,7 +53,7 @@ struct PhotosGridView_Previews: PreviewProvider {
                 store: .init(
                     initialState: .init(),
                     reducer: photosGridReducer,
-                    environment: .init(mainQueue: .main, photosClient: .mock, logger: .init(label: ""))
+                    environment: .init()
                 ),
                 animation: namespace
             )

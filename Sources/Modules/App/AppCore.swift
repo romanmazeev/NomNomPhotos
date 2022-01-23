@@ -9,13 +9,18 @@ import ComposableArchitecture
 import Logging
 
 struct AppState: Equatable {
+    var photos: [Photo] = []
+    
     var photosGrid = PhotosGridState()
     var selectedPhoto: PhotoDetailsState?
 }
 
 enum AppAction {
+    case onAppear
     case photosGrid(PhotosGridAction)
     case photoDetails(PhotoDetailsAction)
+    
+    case photosResponse(Result<[Photo], PhotosClient.Error>)
 }
 
 struct AppEnvironment {
@@ -47,9 +52,7 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
         .pullback(
             state: \.photosGrid,
             action: /AppAction.photosGrid,
-            environment: {
-                .init(mainQueue: $0.mainQueue, photosClient: $0.photosClient, logger: $0.logger)
-            }
+            environment: { _ in  .init() }
         ),
     photoDetailsReducer
         .optional()
@@ -58,13 +61,32 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
             action: /AppAction.photoDetails,
             environment: { _ in .init() }
         ),
-    .init { state, action, _ in
+    .init { state, action, environment in
         switch action {
+        case .onAppear:
+            guard state.photosGrid.loadingState == .notStarted else { return .none }
+            return environment.photosClient.fetch()
+                .receive(on: environment.mainQueue)
+                .catchToEffect(AppAction.photosResponse)
         case .photosGrid(let photosGridAction):
             switch photosGridAction {
-            case .onPhotoTap(let id):
-                state.selectedPhoto = state.photosGrid.photos[id: id]
-                return .none
+            case .photosGridCell(let id, let action):
+                switch action {
+                case .onTap:
+                    guard let selectedPhotoState = state.photosGrid.photos[id: id],
+                          let selectedPhotoFullImageURL = state.photos.first(where: { $0.id == selectedPhotoState.id })?.url else {
+                              return .none
+                          }
+
+                    state.selectedPhoto = .init(
+                        id: selectedPhotoState.id,
+                        title: selectedPhotoState.title,
+                        url: selectedPhotoFullImageURL
+                    )
+
+                    return .none
+                }
+
             default:
                 return .none
             }
@@ -74,6 +96,19 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
                 state.selectedPhoto = nil
                 return .none
             }
+        case .photosResponse(.success(let photos)):
+            state.photos = photos
+            state.photosGrid.photos = IdentifiedArrayOf(uniqueElements: photos.map {
+                .init(id: $0.id, title: $0.title, url: $0.url)
+            })
+            state.photosGrid.loadingState = .loaded
+            return .none
+        case .photosResponse(.failure(let error)):
+            environment.logger.error("\(error.localizedDescription)")
+            state.photos = []
+            state.photosGrid.photos = []
+            state.photosGrid.loadingState = .failed
+            return .none
         }
     }
 )
