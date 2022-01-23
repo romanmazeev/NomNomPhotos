@@ -62,14 +62,21 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
             environment: { _ in .init() }
         ),
     .init { state, action, environment in
+        var refreshEffect: Effect<AppAction, Never> {
+            state.photosGrid.loadingState = .loading
+             return environment.photosClient.fetch()
+                 .receive(on: environment.mainQueue)
+                 .catchToEffect(AppAction.photosResponse)
+         }
+    
         switch action {
         case .onAppear:
             guard state.photosGrid.loadingState == .notStarted else { return .none }
-            return environment.photosClient.fetch()
-                .receive(on: environment.mainQueue)
-                .catchToEffect(AppAction.photosResponse)
+            return refreshEffect
         case .photosGrid(let photosGridAction):
             switch photosGridAction {
+            case .refresh:
+                return refreshEffect
             case .photosGridCell(let id, let action):
                 switch action {
                 case .onTap:

@@ -19,6 +19,10 @@ struct PhotosGridView: View {
                 ProgressView("Loading...")
             case .failed:
                 Text("Error occured")
+                Button("Refresh") {
+                    viewStore.send(.refresh, animation: .default)
+                }
+                .buttonStyle(.borderedProminent)
             case .loaded:
                 ScrollView {
                     LazyVGrid(columns: [GridItem()]) {

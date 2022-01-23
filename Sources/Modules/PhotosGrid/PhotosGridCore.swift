@@ -29,6 +29,7 @@ struct PhotosGridState: Equatable {
 enum PhotosGridAction {
     case onAppear
     case onSeachTextChange(String)
+    case refresh
     
     case photosGridCell(id: String, action: PhotosGridCellAction)
 }
@@ -52,6 +53,8 @@ let photosGridReducer = Reducer<PhotosGridState, PhotosGridAction, PhotosGridEnv
         case .photosGridCell(let id, let action):
             return .none
         case .onAppear:
+            return .none
+        case .refresh:
             return .none
         }
     }
