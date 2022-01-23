@@ -83,10 +83,8 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
                         title: selectedPhotoState.title,
                         url: selectedPhotoFullImageURL
                     )
-
                     return .none
                 }
-
             default:
                 return .none
             }
