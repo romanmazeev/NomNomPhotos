@@ -31,7 +31,7 @@ struct PhotoDetailsView: View {
                         case .failure(let error):
                             VStack {
                                 Image(systemName: "photo")
-                                Text(error.localizedDescription)
+                                Text("Error occured")
                             }
                         @unknown default:
                             Image(systemName: "photo")
@@ -83,7 +83,7 @@ struct PhotoDetailsView_Previews: PreviewProvider {
                     initialState: .init(
                         id: "1",
                         title: "Test",
-                        url: URL(string: "https://unsplash.com/photos/yC-Yzbqy7PY")!
+                        url: URL(string: "https://picsum.photos/id/0/5616/3744")!
                     ),
                     reducer: photoDetailsReducer,
                     environment: .init()

@@ -55,7 +55,21 @@ struct PhotosGridView_Previews: PreviewProvider {
         var body: some View {
             PhotosGridView(
                 store: .init(
-                    initialState: .init(),
+                    initialState: .init(
+                        loadingState: .loaded,
+                        photos: [
+                            .init(
+                                id: "1",
+                                title: "Test 1",
+                                url: URL(string: "https://picsum.photos/id/0/5616/3744")!
+                            ),
+                            .init(
+                                id: "2",
+                                title: "Test 2",
+                                url: URL(string: "https://picsum.photos/id/0/5616/3744")!
+                            )
+                        ],
+                        searchText: ""),
                     reducer: photosGridReducer,
                     environment: .init()
                 ),

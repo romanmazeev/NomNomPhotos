@@ -70,7 +70,7 @@ struct PhotosGridCellView_Previews: PreviewProvider {
                     initialState: .init(
                         id: "1",
                         title: "Test",
-                        url: URL(string: "https://unsplash.com/photos/yC-Yzbqy7PY")!
+                        url: URL(string: "https://picsum.photos/id/0/5616/3744")!
                     ),
                     reducer: photosGridCellReducer,
                     environment: .init()

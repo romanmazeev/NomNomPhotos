@@ -39,3 +39,26 @@ struct AppView: View {
         }
     }
 }
+
+struct AppView_Previews: PreviewProvider {
+    struct AppView_PreviewsView: View {
+        @Namespace var namespace
+        var body: some View {
+            AppView(
+                store: .init(
+                    initialState: .init(),
+                    reducer: appReducer,
+                    environment: .init(
+                        photosClient: .mock,
+                        logger: .init(label: ""),
+                        mainQueue: .main
+                    )
+                )
+            )
+        }
+    }
+    
+    static var previews: some View {
+        AppView_PreviewsView()
+    }
+}
