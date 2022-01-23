@@ -97,7 +97,7 @@ let appReducer = Reducer<AppState, AppAction, AppEnvironment>.combine(
         case .photosResponse(.success(let photos)):
             state.photos = photos
             state.photosGrid.photos = IdentifiedArrayOf(uniqueElements: photos.map {
-                .init(id: $0.id, title: $0.title, url: $0.url)
+                .init(id: $0.id, title: $0.title, url: $0.thumbnailURL)
             })
             state.photosGrid.loadingState = .loaded
             return .none
